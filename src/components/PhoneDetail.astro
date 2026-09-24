@@ -1,0 +1,155 @@
+---
+/**
+ * Right phone — the "Latte Grand" product detail screen.
+ *
+ * Overlaps the left phone and its hero cup deliberately spills past the top
+ * and left edges of the device, so the phone itself must not clip.
+ */
+import Icon from './Icon.astro';
+import Cup from './Cup.astro';
+import { app, formatPrice } from '../data/site';
+
+const label =
+  'Flavored app, Latte Grand product screen: a large latte with cocoa-powder heart art, description and an Add to Cart button';
+---
+
+<div class="phone phone--detail" role="img" aria-label={label}>
+  <span class="phone__back"><Icon name="chevron-left" size={16} /></span>
+
+  <div class="phone__cup">
+    <Cup file="hero-heart.png" variant="heart" saucer size={300} alt={app.detailScreen.cupAlt} />
+  </div>
+
+  <div class="phone__copy">
+    <h3 class="phone__title">{app.detailScreen.title}</h3>
+    <p class="phone__body">{app.detailScreen.body}</p>
+
+    <p class="phone__label">{app.detailScreen.priceLabel}</p>
+
+    <div class="phone__row">
+      <span class="phone__price">{formatPrice(app.detailScreen.price)}</span>
+      <span class="phone__heart"><Icon name="heart" size={14} /></span>
+      <span class="phone__add">
+        {app.detailScreen.addToCart}
+        <span class="phone__plus"><Icon name="plus" size={9} stroke={2} /></span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .phone {
+    position: relative;
+    width: 316px;
+    height: 685px;
+    border-radius: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: linear-gradient(165deg, #c7b2b0 0%, #e4d6ca 50%, #f1e8da 100%);
+    box-shadow: var(--shadow-card);
+    color: var(--espresso-900);
+    /* the cup hangs out over the top-left corner */
+    overflow: visible;
+  }
+
+  .phone__back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 3;
+  }
+
+  .phone__cup {
+    position: absolute;
+    top: -58px;
+    left: -62px;
+    z-index: 2;
+    width: 300px;
+    filter: drop-shadow(0 22px 34px rgba(40, 18, 8, 0.32));
+  }
+
+  /* Once the phones stack, the 62px overhang would push the cup off the left
+     edge of the viewport, so it is pulled back in. */
+  @media (max-width: 767px) {
+    .phone__cup {
+      top: -30px;
+      left: -14px;
+    }
+  }
+
+  .phone__copy {
+    position: absolute;
+    inset: auto 20px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone__title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .phone__body {
+    margin-top: 8px;
+    font-size: 8px;
+    line-height: 1.6;
+    opacity: 0.85;
+  }
+
+  .phone__label {
+    margin-top: 16px;
+    font-size: 8px;
+    font-weight: 700;
+  }
+
+  .phone__row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 8px;
+  }
+
+  .phone__price {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding-inline: 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(250, 243, 230, 0.9);
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 8px 16px -10px rgba(42, 10, 10, 0.5);
+  }
+
+  .phone__heart {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .phone__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    margin-inline-start: auto;
+    padding-inline: 14px;
+    border-radius: var(--radius-pill);
+    background: var(--espresso-900);
+    color: var(--cream-50);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .phone__plus {
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+  }
+</style>

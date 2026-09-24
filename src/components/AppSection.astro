@@ -1,0 +1,298 @@
+---
+/**
+ * App section — the overlapping phone pair on the left, the download copy and
+ * the two store buttons on the right.
+ *
+ * The pair is laid out on a fixed 640x690 design grid and scaled as a whole
+ * with a container query, so both devices stay visible and overlapped all the
+ * way down to 360px.
+ */
+import Icon from './Icon.astro';
+import PhoneMenu from './PhoneMenu.astro';
+import PhoneDetail from './PhoneDetail.astro';
+import BeanScatter from './BeanScatter.astro';
+import Cup from './Cup.astro';
+import { BEANS_ACCENT } from '../data/beans';
+import { app } from '../data/site';
+---
+
+<section class="app" aria-labelledby="app-title">
+  <div class="app__stage">
+    <div class="app__scaled">
+      <div class="app__phones">
+        <div class="app__phone app__phone--menu">
+          <PhoneMenu />
+        </div>
+        <div class="app__phone app__phone--detail">
+          <PhoneDetail />
+        </div>
+
+        <div class="app__accent">
+          <BeanScatter beans={BEANS_ACCENT} class="app__accent-beans" />
+          <div class="app__accent-cup">
+            <Cup
+              file="latte-small.png"
+              variant="rosetta"
+              size={64}
+              alt="Small latte with rosetta latte art"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app__copy" data-reveal>
+    <h2 class="app__title" id="app-title">{app.heading}</h2>
+    <p class="app__body">{app.body}</p>
+
+    <div class="app__stores">
+      {
+        app.stores.map((store) => (
+          <a class="app__store" href={store.href} aria-label={store.label}>
+            <Icon name={store.icon} size={30} />
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .app {
+    display: grid;
+    /* Measured on the reference: phones span x 207..517 and 563..873, the copy
+       column starts at x 933 */
+    grid-template-columns: minmax(0, 666fr) minmax(0, 302fr);
+    align-items: center;
+    gap: clamp(28px, 3.61vw, 52px);
+    /* Reference: the phone pair's top edge sits at y 2009 in the 1440 artboard. */
+    margin-top: clamp(80px, 18.75vw, 270px);
+  }
+
+  /* --- phone pair --------------------------------------------------------
+     The pair is laid out on a fixed 677x690 design grid and scaled as a whole,
+     so the two devices keep their exact proportions at every width. Crucially
+     `.app__scaled` is sized to the *scaled* result, so the transform never
+     pushes the page into horizontal scroll. `--pair-w`/`--pair-h` describe the
+     current arrangement (side by side, or stacked on phones). */
+
+  .app__stage {
+    container-type: inline-size;
+    min-width: 0;
+  }
+
+  .app__scaled {
+    --pair-w: 677;
+    --pair-h: 685;
+    --phone-scale: 0.97;
+    position: relative;
+    width: calc(var(--pair-w) * 1px * var(--phone-scale));
+    height: calc(var(--pair-h) * 1px * var(--phone-scale));
+  }
+
+  .app__phones {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--pair-w) * 1px);
+    height: calc(var(--pair-h) * 1px);
+    transform: scale(var(--phone-scale));
+    transform-origin: top left;
+  }
+
+  .app__phone {
+    position: absolute;
+    top: 0;
+    width: 316px;
+  }
+
+  /* the two devices sit side by side with a 45px gutter */
+  .app__phone--menu {
+    left: 0;
+    z-index: 1;
+  }
+
+  .app__phone--detail {
+    left: 361px;
+    z-index: 2;
+  }
+
+  /* --- floating rosetta + beans at the seam ------------------------------ */
+
+  .app__accent {
+    position: absolute;
+    top: 384px;
+    left: 148px;
+    z-index: 3;
+    width: 130px;
+    height: 130px;
+  }
+
+  .app__accent-beans {
+    z-index: 1;
+  }
+
+  .app__accent-cup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 64px;
+    filter: drop-shadow(0 10px 16px rgba(40, 18, 8, 0.35));
+  }
+
+  /* --- copy -------------------------------------------------------------- */
+
+  .app__copy {
+    min-width: 0;
+    /* On the reference the copy block sits almost level with the phone pair's
+       centre — measured, its optical centre is only ~5px below the pair's.
+       `translate` composes with the reveal `transform`. */
+    translate: 0 5px;
+  }
+
+  .app__title {
+    /* Reference: "App is Available" measures 268px wide and its ink spans
+       y 2203..2248. */
+    font-size: clamp(24px, 2.33vw, 33.5px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--espresso-900);
+  }
+
+  .app__body {
+    max-width: 100%;
+    margin-top: 32px;
+    /* The reference fits this copy into 6 lines of ~46 characters inside a
+       302px column, which needs Roboto's normal advance tightened a little. */
+    font-size: clamp(14px, 1.11vw, 16px);
+    letter-spacing: -0.03em;
+    line-height: 1.6;
+    color: var(--text-body);
+  }
+
+  .app__stores {
+    display: flex;
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .app__store {
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.32);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    color: var(--espresso-900);
+    box-shadow: var(--shadow-chip);
+    transition:
+      transform 200ms var(--ease-out),
+      background-color 200ms var(--ease-out);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app__store {
+      background: rgba(250, 246, 240, 0.85);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .app__store:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .app__store:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* --- scale the whole pair down, keeping the gutter ---------------------
+     `tan(atan2(a, b))` is CSS's way of dividing one length by another, so
+     `tan(atan2(100cqw, 677px))` is the column width expressed as a multiple of
+     the design width. The pair therefore fits its column exactly at every
+     viewport — no breakpoint ladder, and no horizontal overflow anywhere. */
+
+  .app__scaled {
+    /* Fallback for engines without CSS trigonometric functions: three coarse
+       steps that are safe (never wider than their container) down to 360px. */
+    --phone-scale: 0.4;
+    position: relative;
+    width: calc(var(--pair-w) * 1px * var(--phone-scale));
+    height: calc(var(--pair-h) * 1px * var(--phone-scale));
+  }
+
+  @media (min-width: 768px) {
+    .app__scaled {
+      --phone-scale: 0.85;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .app__scaled {
+      --phone-scale: 0.97;
+    }
+  }
+
+  @supports (width: calc(tan(atan2(1px, 1px)) * 1px)) {
+    .app__scaled {
+      --phone-scale: min(1, tan(atan2(100cqw, calc(var(--pair-w) * 1px))));
+    }
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 1023px) {
+    .app {
+      grid-template-columns: 1fr;
+      gap: 44px;
+    }
+
+    .app__scaled {
+      margin-inline: auto;
+    }
+
+    /* the 79px optical offset only applies to the two-column arrangement */
+    .app__copy {
+      translate: none;
+    }
+  }
+
+  /* Below 768 the pair stacks, so each device stays large enough to read
+     instead of shrinking to a thumbnail. */
+  @media (max-width: 767px) {
+    .app {
+      gap: 34px;
+    }
+
+    .app__scaled {
+      --pair-w: 316;
+      --pair-h: 1370;
+      margin-inline: auto;
+    }
+
+    .app__phones {
+      display: grid;
+      grid-template-rows: 685px 685px;
+      gap: 24px;
+    }
+
+    .app__phone {
+      position: static;
+      width: 316px;
+    }
+
+    /* straddles the horizontal seam, offset left so it clears the detail
+       screen's cup */
+    .app__accent {
+      top: 615px;
+      left: 6%;
+      translate: none;
+    }
+  }
+</style>

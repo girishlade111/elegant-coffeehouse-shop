@@ -1,0 +1,106 @@
+---
+/**
+ * BaseLayout — document shell, meta/SEO, self-hosted Roboto, the fixed bokeh
+ * backdrop and the single glass shell that wraps the page.
+ */
+import { getImage } from 'astro:assets';
+import '../styles/global.css';
+
+/* Roboto, self-hosted. Latin subsets only — the page copy is pure ASCII, and
+   this keeps the build from emitting 50 unused font files. */
+import '@fontsource/roboto/latin-400.css';
+import '@fontsource/roboto/latin-500.css';
+import '@fontsource/roboto/latin-700.css';
+
+/* Preload the two weights that paint above the fold. */
+import roboto500 from '@fontsource/roboto/files/roboto-latin-500-normal.woff2?url';
+import roboto700 from '@fontsource/roboto/files/roboto-latin-700-normal.woff2?url';
+
+import { site } from '../data/site';
+
+const bokeh = import.meta.glob<{ default: ImageMetadata }>('/src/assets/bg/*.{jpg,jpeg,png,webp}', {
+  eager: true,
+});
+const heroCups = import.meta.glob<{ default: ImageMetadata }>('/src/assets/cups/hero-heart.png', {
+  eager: true,
+});
+
+const bgSource = Object.values(bokeh)[0]?.default;
+const ogSource = Object.values(heroCups)[0]?.default;
+
+/* One optimised WebP for the backdrop — it sits behind 28px of blur, so a
+   modest quality is invisible and keeps the LCP payload small. */
+const bgImage = bgSource
+  ? await getImage({ src: bgSource, format: 'webp', width: 1920, quality: 70 })
+  : undefined;
+
+const ogImage = ogSource
+  ? new URL((await getImage({ src: ogSource, format: 'png', width: 900 })).src, site.url).href
+  : undefined;
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.title, description = site.description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta name="theme-color" content={site.themeColor} />
+    <meta name="color-scheme" content="light" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <link rel="preload" as="font" type="font/woff2" href={roboto500} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={roboto700} crossorigin />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:alt" content={site.ogImageAlt} />}
+
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <script type="application/ld+json" set:html={JSON.stringify(site.jsonLd)} />
+
+    {/* Flags the document as JS-capable so the scroll-reveal start state can be
+        scoped to `html.js`. With JS off, every section renders fully visible. */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">{'Skip to content'}</a>
+
+    <div
+      class="bg"
+      aria-hidden="true"
+      style={bgImage ? `--bg-image:url("${bgImage.src}")` : undefined}
+    >
+    </div>
+
+    <div class="shell">
+      <slot />
+    </div>
+  </body>
+</html>

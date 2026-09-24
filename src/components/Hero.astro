@@ -1,0 +1,191 @@
+---
+/**
+ * Hero (#home) — headline + CTA + icon chips on the left, the big top-down
+ * cup on the right. The cup is the LCP element, so it loads eagerly.
+ */
+import Icon from './Icon.astro';
+import Cup from './Cup.astro';
+import { hero } from '../data/site';
+---
+
+<section class="hero" id="home" aria-labelledby="hero-title">
+  <div class="hero__copy">
+    <h1 class="hero__title" id="hero-title">
+      {hero.heading.map((line) => <span class="hero__line">{line}</span>)}
+    </h1>
+
+    <a class="btn btn--primary hero__cta" href={hero.cta.href}>{hero.cta.label}</a>
+
+    <ul class="hero__chips">
+      {
+        hero.chips.map((chip) => (
+          <li>
+            <a class="hero__chip" href={chip.href} aria-label={chip.label}>
+              <Icon name={chip.icon} size={28} />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="hero__stage">
+    <div class="hero__cup" data-float>
+      <Cup file="hero-heart.png" variant="heart" saucer size={450} alt={hero.cupAlt} priority />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+    gap: clamp(24px, 3vw, 48px);
+    min-height: 455px;
+    /* Reference: the h1's first line of ink starts at y 325 and the second at
+       y 397, i.e. a 72px pitch. */
+    margin-top: clamp(40px, 6.18vw, 89px);
+  }
+
+  .hero__copy {
+    min-width: 0;
+  }
+
+  .hero__title {
+    display: grid;
+    gap: 0;
+    margin-top: 0;
+    font-size: var(--fs-h1);
+    font-weight: 700;
+    line-height: var(--lh-h1);
+    /* Roboto at display size runs ~5% wider than the reference's wordmark, so
+       the tracking is tightened until the two lines measure the same width
+       (ref: "Coffee" 183px, "The Best For You" 449px). */
+    letter-spacing: -0.03em;
+    color: var(--espresso-900);
+  }
+
+  .hero__line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .hero__cta {
+    margin-top: clamp(28px, 3.8vw, 55px);
+    min-width: 237px;
+    min-height: 60px;
+  }
+
+  .hero__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(14px, 2.1vw, 30px);
+    margin-top: clamp(20px, 2.2vw, 32px);
+  }
+
+  .hero__chip {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-chip);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--espresso-900);
+    box-shadow: var(--shadow-chip);
+    transition:
+      transform 200ms var(--ease-out),
+      background-color 200ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__chip:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .hero__chip:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* --- the cup ----------------------------------------------------------- */
+
+  .hero__stage {
+    position: relative;
+    align-self: start;
+    min-width: 0;
+  }
+
+  /* Positioned from the reference: the saucer spans x 770..1174 and its top
+     edge sits at y 256, i.e. 73px above the hero's own top edge. */
+  /* Positioned from the reference: the saucer is a 412px circle centred on
+     (977, 448). The artwork draws the saucer at 0.960 of its canvas, so the
+     canvas is 412 / 0.960 = 429px and its own centre coincides with the
+     saucer's — i.e. the canvas belongs at x 763, y 233.5. */
+  .hero__cup {
+    position: absolute;
+    top: -76.5px;
+    right: 38px;
+    width: 429px;
+    max-width: 100%;
+    filter: drop-shadow(0 26px 46px rgba(40, 20, 10, 0.3));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__cup {
+      animation: cup-float 7s ease-in-out infinite alternate;
+    }
+
+    @keyframes cup-float {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-8px);
+      }
+    }
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 1023px) {
+    .hero__cup {
+      top: -34px;
+      right: 12px;
+      width: 340px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: 0;
+      gap: 0;
+    }
+
+    .hero__title {
+      margin-top: 0;
+      font-size: clamp(34px, 10vw, 46px);
+    }
+
+    .hero__line {
+      white-space: normal;
+    }
+
+    .hero__stage {
+      align-self: center;
+      margin-top: 34px;
+      min-height: 280px;
+    }
+
+    .hero__cup {
+      position: relative;
+      top: 0;
+      right: auto;
+      margin-inline: auto;
+      width: 290px;
+    }
+  }
+</style>

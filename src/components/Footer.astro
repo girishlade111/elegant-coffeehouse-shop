@@ -1,0 +1,120 @@
+---
+/**
+ * Footer — brand plus three link columns, with a drift of beans spilling out
+ * of the shell's bottom-left corner.
+ *
+ * The bean scatter is positioned against `.shell` (its nearest positioned
+ * ancestor), not against the footer, which is what lets it break the rounded
+ * corner exactly like the reference.
+ */
+import Logo from './Logo.astro';
+import BeanScatter from './BeanScatter.astro';
+import { BEANS_FOOTER } from '../data/beans';
+import { footerColumns } from '../data/site';
+---
+
+<footer class="footer">
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <Logo variant="light" size={30} />
+    </div>
+
+    {
+      footerColumns.map((column) => (
+        <div class="footer__column">
+          <h3 class="footer__heading">{column.title}</h3>
+          <ul class="footer__list">
+            {column.items.map((item) => (
+              <li class="footer__item">{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="footer__beans">
+    <BeanScatter beans={BEANS_FOOTER} />
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-top: clamp(48px, 7.36vw, 106px);
+  }
+
+  .footer__grid {
+    display: grid;
+    /* Column starts measured at x 209 / 499 / 806 / 1123 on the reference */
+    grid-template-columns: 2.5fr 2.67fr 2.77fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .footer__brand {
+    min-width: 0;
+    /* On the reference the wordmark starts 27px inside the column edge. */
+    padding-inline-start: 27px;
+  }
+
+  .footer__heading {
+    /* Reference: "Our Services" measures 150px wide with ink 3058..3083. */
+    font-size: 29px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--espresso-900);
+  }
+
+  .footer__list {
+    display: grid;
+    /* Reference link rows sit on a ~35px pitch, the first about 22px below the
+       heading's ink. */
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .footer__item {
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--text-body);
+  }
+
+  /* --- beans spilling out of the bottom-left corner ---------------------- */
+
+  .footer__beans {
+    /* absolutely positioned against `.shell` */
+    position: absolute;
+    left: 6px;
+    bottom: -90px;
+    width: 300px;
+    height: 230px;
+    transform-origin: bottom left;
+    transform: scale(var(--footer-bean-scale, 1));
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 1023px) {
+    .footer__beans {
+      --footer-bean-scale: 0.78;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .footer__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 34px 24px;
+    }
+
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+
+    .footer__beans {
+      --footer-bean-scale: 0.6;
+      bottom: -42px;
+    }
+  }
+</style>

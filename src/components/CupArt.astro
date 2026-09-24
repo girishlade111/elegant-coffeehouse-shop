@@ -1,0 +1,209 @@
+---
+/**
+ * CupArt — the pure-SVG latte cup.
+ *
+ * This is the *fallback*: `<Cup>` renders a real PNG from `src/assets/cups/`
+ * whenever one exists, and drops back to this component otherwise. It is also
+ * the thing that keeps the page honest if the raster assets are ever removed —
+ * the layout, silhouette and palette are identical either way.
+ *
+ * Layers, outside in: saucer (radial #FFFFFF -> #E9E6E1), cup rim ring, crema
+ * (radial #E8C79A -> #C98F52), then the latte art.
+ */
+
+export type CupVariant = 'heart' | 'rosetta' | 'bear' | 'leaf';
+
+interface Props {
+  variant?: CupVariant;
+  /** Rendered size in px. */
+  size?: number;
+  /** Draw the saucer + handle (the hero cup). */
+  saucer?: boolean;
+  class?: string;
+}
+
+const { variant = 'heart', size = 200, saucer = false, class: className = '' } = Astro.props;
+
+/* Deterministic per-render unique ids — no Math.random (that would drift
+   between the SSR pass and any client work). */
+let uidCounter = 0;
+const uid = `cupart-${(uidCounter += 1)}-${variant}`;
+
+/* ---------------------------------------------------------------- geometry */
+const VB = 200;
+const cx = saucer ? 97 : 100;
+const cy = 100;
+const cupR = saucer ? 71 : 97;
+const innerR = saucer ? 63 : 89;
+
+/* ------------------------------------------------------------------- art */
+const ART_R = 62; // art radius in local units (local 100 == innerR)
+
+function leafPath(
+  bx: number,
+  by: number,
+  ax: number,
+  ay: number,
+  len: number,
+  w: number,
+  steps = 14,
+): string {
+  const px = -ay;
+  const py = ax;
+  const up: string[] = [];
+  const dn: string[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const u = i / steps;
+    const h = w * Math.sin(Math.PI * u ** 0.82);
+    const x = bx + ax * len * u;
+    const y = by + ay * len * u;
+    up.push(`${(x + px * h).toFixed(2)} ${(y + py * h).toFixed(2)}`);
+    dn.push(`${(x - px * h).toFixed(2)} ${(y - py * h).toFixed(2)}`);
+  }
+  return `M${up.join('L')}L${dn.reverse().join('L')}Z`;
+}
+
+/** Rosetta: tapered leaves fanning off a central stem. */
+function rosettaPaths(): { leaves: string[]; stem: string } {
+  const ang = (-56 * Math.PI) / 180;
+  const ax = Math.cos(ang);
+  const ay = Math.sin(ang);
+  const nx = -ay;
+  const ny = ax;
+  const span = ART_R * 1.3;
+  const x0 = -ax * span * 0.44;
+  const y0 = -ay * span * 0.44;
+  const leaves: string[] = [];
+  const count = 7;
+
+  for (let i = 0; i < count; i += 1) {
+    const t = i / (count - 1);
+    const bx = x0 + ax * span * t;
+    const by = y0 + ay * span * t;
+    const len = ART_R * (0.5 - 0.24 * t);
+    const w = ART_R * (0.105 - 0.035 * t);
+    for (const sgn of [-1, 1]) {
+      const spread = (sgn * (78 - 30 * t) * Math.PI) / 180;
+      const c = Math.cos(spread);
+      const s = Math.sin(spread);
+      const fx = nx * sgn * c - ny * sgn * s;
+      const fy = nx * sgn * s + ny * sgn * c;
+      leaves.push(leafPath(bx, by, fx, fy, len, w));
+    }
+  }
+
+  return {
+    leaves,
+    stem: `M${x0.toFixed(2)} ${y0.toFixed(2)}L${(x0 + ax * span * 1.04).toFixed(2)} ${(y0 + ay * span * 1.04).toFixed(2)}`,
+  };
+}
+
+/** Heart centred on the origin, ~52 units wide, pointing down. */
+const HEART_PATH =
+  'M0 24C-6 18-26 8-26-6c0-10 8-16 16-16 5 0 8.5 3 10 7 1.5-4 5-7 10-7 8 0 16 6 16 16 0 14-20 24-26 30Z';
+
+const rosetta = rosettaPaths();
+---
+
+<svg
+  class={`cup-art ${className}`.trim()}
+  width={size}
+  height={size}
+  viewBox={`0 0 ${VB} ${VB}`}
+  role="presentation"
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <radialGradient id={`${uid}-saucer`} cx="50%" cy="46%" r="62%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E9E6E1" />
+    </radialGradient>
+    <radialGradient id={`${uid}-cup`} cx="42%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#EDE8E1" />
+    </radialGradient>
+    <radialGradient id={`${uid}-crema`} cx="44%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#E8C79A" />
+      <stop offset="100%" stop-color="#C98F52" />
+    </radialGradient>
+    <filter id={`${uid}-soft`} x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#280f0a" flood-opacity="0.28" />
+    </filter>
+  </defs>
+
+  {
+    saucer && (
+      <>
+        <circle cx="100" cy="100" r="99" fill={`url(#${uid}-saucer)`} />
+        <circle cx="100" cy="100" r="98" fill="none" stroke="#BCB4A6" stroke-opacity="0.5" />
+        <circle cx="100" cy="100" r="90" fill="#FFFFFF" />
+      </>
+    )
+  }
+
+  <g filter={`url(#${uid}-soft)`}>
+    {/* porcelain */}
+    <circle cx={cx} cy={cy} r={cupR} fill={`url(#${uid}-cup)`} />
+    <circle cx={cx} cy={cy} r={cupR} fill="none" stroke="#C6BDAE" stroke-opacity="0.45" />
+    {/* crema */}
+    <circle cx={cx} cy={cy} r={innerR} fill={`url(#${uid}-crema)`} />
+    <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="#7A4E26" stroke-opacity="0.45" />
+  </g>
+
+  <g transform={`translate(${cx} ${cy}) scale(${(innerR / 100).toFixed(4)})`}>
+    {
+      variant === 'heart' && (
+        <>
+          <path d={HEART_PATH} transform="translate(19 -21) scale(0.72)" fill="#96603A" />
+          <path d={HEART_PATH} transform="translate(-9 12) scale(0.82)" fill="#60341A" />
+        </>
+      )
+    }
+    {
+      variant === 'bear' && (
+        <g fill="#6B3A1E">
+          <circle cx="-27" cy="-29" r="13" />
+          <circle cx="27" cy="-29" r="13" />
+          <circle cx="-27" cy="-29" r="6.4" fill="#E8C79A" />
+          <circle cx="27" cy="-29" r="6.4" fill="#E8C79A" />
+          <circle cx="-14" cy="-8" r="5" />
+          <circle cx="14" cy="-8" r="5" />
+          <ellipse cx="0" cy="16" rx="19" ry="14" />
+          <ellipse cx="0" cy="11" rx="7" ry="5" fill="#3A1F0C" />
+          <path
+            d="M-11 18c0 6 5 10 11 10s11-4 11-10"
+            fill="none"
+            stroke="#3A1F0C"
+            stroke-width="2.6"
+            stroke-linecap="round"
+          />
+        </g>
+      )
+    }
+    {
+      (variant === 'rosetta' || variant === 'leaf') && (
+        <g fill="#FFF6E6">
+          {rosetta.leaves.map((d) => (
+            <path d={d} />
+          ))}
+          <path
+            d={rosetta.stem}
+            stroke="#FFF6E6"
+            stroke-width={variant === 'leaf' ? 5 : 6.4}
+            stroke-linecap="round"
+            fill="none"
+          />
+        </g>
+      )
+    }
+  </g>
+</svg>
+
+<style>
+  .cup-art {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

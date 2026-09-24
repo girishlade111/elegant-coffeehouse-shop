@@ -1,0 +1,293 @@
+---
+/**
+ * Navbar — brand on the left, links + "Coffee Shop" pill on the right.
+ * Below 900px the links collapse into a 44px glass circle that toggles a
+ * glass dropdown panel.
+ */
+import Logo from './Logo.astro';
+import { navLinks, navCta, site } from '../data/site';
+---
+
+<header class="nav" data-nav>
+  <nav class="nav__inner" aria-label="Primary">
+    <a class="nav__brand" href="#home">
+      <Logo />
+      <span class="visually-hidden">{site.name} — {site.tagline}</span>
+    </a>
+
+    <ul class="nav__links">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              class="nav__link"
+              href={link.href}
+              aria-current={link.current ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="nav__cta" href={navCta.href}>{navCta.label}</a>
+
+    <button
+      class="nav__toggle glass"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-panel"
+      aria-label="Open navigation menu"
+      data-nav-toggle
+    >
+      <span class="nav__bar"></span>
+      <span class="nav__bar"></span>
+      <span class="nav__bar"></span>
+    </button>
+  </nav>
+
+  <div class="nav__panel glass" id="nav-panel" hidden data-nav-panel>
+    <ul class="nav__panel-list">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a class="nav__panel-link" href={link.href} aria-current={link.current ? 'page' : undefined}>
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="nav__panel-cta" href={navCta.href}>{navCta.label}</a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: relative;
+    z-index: 20;
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    min-height: 64px;
+    /* The reference keeps the "Coffee Shop" pill ~80px clear of the content
+       edge, so the right-hand cluster stops short of it. */
+    padding-inline-end: clamp(0px, 5.55vw, 80px);
+  }
+
+  .nav__brand {
+    display: inline-flex;
+    border-radius: 8px;
+  }
+
+  /* --- links ------------------------------------------------------------- */
+
+  .nav__links {
+    display: flex;
+    align-items: center;
+    gap: clamp(20px, 3.2vw, 46px);
+    margin-inline-start: auto;
+  }
+
+  .nav__link {
+    position: relative;
+    display: inline-block;
+    padding-block: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--espresso-900);
+    white-space: nowrap;
+  }
+
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -2px;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 260ms var(--ease-out);
+  }
+
+  .nav__link:hover::after,
+  .nav__link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* --- pill -------------------------------------------------------------- */
+
+  .nav__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 15px;
+    border-radius: var(--radius-pill);
+    background: var(--espresso-900);
+    color: var(--cream-50);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    box-shadow: 0 10px 20px -12px rgba(42, 10, 10, 0.6);
+    transition:
+      transform 180ms var(--ease-out),
+      box-shadow 180ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .nav__cta:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-btn);
+    }
+
+    .nav__cta:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* --- mobile toggle ----------------------------------------------------- */
+
+  .nav__toggle {
+    display: none;
+    place-items: center;
+    gap: 4px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    color: var(--espresso-900);
+    box-shadow: var(--shadow-chip);
+  }
+
+  .nav__bar {
+    display: block;
+    width: 18px;
+    height: 1.6px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 220ms var(--ease-out), opacity 160ms linear;
+  }
+
+  .nav__panel {
+    display: none;
+  }
+
+  @media (max-width: 899px) {
+    .nav__links,
+    .nav__cta {
+      display: none;
+    }
+
+    .nav__toggle {
+      display: grid;
+    }
+
+    .nav__toggle[aria-expanded='true'] .nav__bar:nth-child(1) {
+      transform: translateY(5.6px) rotate(45deg);
+    }
+
+    .nav__toggle[aria-expanded='true'] .nav__bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav__toggle[aria-expanded='true'] .nav__bar:nth-child(3) {
+      transform: translateY(-5.6px) rotate(-45deg);
+    }
+
+    .nav__panel {
+      display: block;
+      position: absolute;
+      inset-inline: 0;
+      top: calc(100% + 10px);
+      padding: 14px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .nav__panel[hidden] {
+      display: none;
+    }
+
+    .nav__panel-list {
+      display: grid;
+      gap: 2px;
+    }
+
+    .nav__panel-link {
+      display: block;
+      padding: 11px 14px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--espresso-900);
+    }
+
+    .nav__panel-link:hover,
+    .nav__panel-link[aria-current='page'] {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .nav__panel-cta {
+      display: block;
+      margin-top: 8px;
+      padding: 13px 18px;
+      border-radius: var(--radius-pill);
+      background: var(--espresso-900);
+      color: var(--cream-50);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = nav?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = nav?.querySelector<HTMLElement>('[data-nav-panel]');
+
+  if (nav && toggle && panel) {
+    const setOpen = (open: boolean): void => {
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      panel.hidden = !open;
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // link click
+    panel.addEventListener('click', (event) => {
+      if ((event.target as Element).closest('a')) setOpen(false);
+    });
+
+    // Escape
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // outside click
+    document.addEventListener('click', (event) => {
+      if (toggle.getAttribute('aria-expanded') !== 'true') return;
+      const target = event.target as Node;
+      if (!nav.contains(target)) setOpen(false);
+    });
+
+    // never leave the panel open when the layout grows back to desktop
+    const wide = window.matchMedia('(min-width: 900px)');
+    wide.addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
+    });
+  }
+</script>

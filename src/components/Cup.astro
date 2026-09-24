@@ -1,0 +1,75 @@
+---
+/**
+ * Cup — the single entry point every cup on the page renders through.
+ *
+ * Looks for a real PNG in `src/assets/cups/`. If the file is there it is
+ * optimised through `astro:assets` (AVIF + WebP + PNG fallback, 1x/2x).
+ * If it is not there — or you delete it while swapping in your own photography
+ * — the component silently renders `CupArt` instead, so no markup changes and
+ * no broken images.
+ */
+import { Picture } from 'astro:assets';
+import CupArt from './CupArt.astro';
+import type { CupVariant } from './CupArt.astro';
+
+/* Eagerly resolved at build time; the map is empty when no PNGs exist. */
+const cupFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/cups/*.png', {
+  eager: true,
+});
+
+interface Props {
+  /** File name inside `src/assets/cups/`, e.g. `"americano.png"`. */
+  file?: string;
+  /** `CupArt` fallback variant. */
+  variant?: CupVariant;
+  /** Rendered size in px (the cup is always square). */
+  size?: number;
+  /** Draw the saucer + handle in the SVG fallback. */
+  saucer?: boolean;
+  /** Required — this is the accessible name for the cup. */
+  alt: string;
+  /** LCP cups opt out of lazy loading. */
+  priority?: boolean;
+  class?: string;
+}
+
+const {
+  file,
+  variant = 'heart',
+  size = 200,
+  saucer = false,
+  alt,
+  priority = false,
+  class: className = '',
+} = Astro.props;
+
+const asset = file ? cupFiles[`/src/assets/cups/${file}`]?.default : undefined;
+---
+
+{
+  asset ? (
+    <Picture
+      src={asset}
+      formats={['avif']}
+      fallbackFormat="webp"
+      width={size}
+      height={size}
+      densities={[1, 2]}
+      alt={alt}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : undefined}
+      decoding={priority ? 'sync' : 'async'}
+      class={`cup ${className}`.trim()}
+    />
+  ) : (
+    <CupArt variant={variant} size={size} saucer={saucer} class={`cup ${className}`.trim()} />
+  )
+}
+
+<style>
+  .cup {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

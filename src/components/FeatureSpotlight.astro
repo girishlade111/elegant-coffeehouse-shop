@@ -1,0 +1,147 @@
+---
+/**
+ * Feature spotlight (#about) — copy on the left, the big latte surrounded by
+ * scattered beans on the right, with a glass price badge on the cup's shoulder.
+ */
+import Cup from './Cup.astro';
+import BeanScatter from './BeanScatter.astro';
+import { BEANS_FEATURE } from '../data/beans';
+import { feature, formatPrice } from '../data/site';
+---
+
+<section class="feature" id="about" aria-labelledby="about-title">
+  <div class="feature__copy" data-reveal>
+    <h2 class="feature__title" id="about-title">{feature.heading}</h2>
+    <p class="feature__body">{feature.body}</p>
+    <a class="btn btn--gradient feature__cta" href={feature.cta.href}>{feature.cta.label}</a>
+  </div>
+
+  <div class="feature__stage" data-reveal style="--reveal-delay:120ms">
+    <BeanScatter beans={BEANS_FEATURE} parallax={30} class="feature__beans" />
+
+    <div class="feature__cup">
+      <Cup file="rosetta-large.png" variant="rosetta" size={310} alt={feature.cupAlt} />
+    </div>
+
+    <span class="feature__badge">{formatPrice(feature.price)}</span>
+  </div>
+</section>
+
+<style>
+  .feature {
+    display: grid;
+    /* Measured off the reference: the copy column runs x 204..799 (595 wide)
+       and the square cup stage x 825..1230 (405), 26px apart. */
+    grid-template-columns: minmax(0, 589fr) minmax(0, 405fr);
+    align-items: start;
+    gap: clamp(18px, 1.81vw, 26px);
+    margin-top: clamp(48px, 4.72vw, 68px);
+  }
+
+  .feature__copy {
+    min-width: 0;
+  }
+
+  /* The reference wraps this heading as "Lorem Ipsum is simply dummy text /
+     of the printing and typesetting / industry." — i.e. it simply fills the
+     left column, so no artificial measure is applied. */
+  .feature__title {
+    max-width: 100%;
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    line-height: var(--lh-h2);
+    color: var(--espresso-900);
+  }
+
+  .feature__body {
+    max-width: 100%;
+    margin-top: 30px;
+    /* The reference sets this as a lead paragraph, noticeably larger than the
+       page body: it fills the 595px column in 4 lines. */
+    font-size: clamp(16px, 1.39vw, 20px);
+    line-height: 1.6;
+    color: var(--text-body);
+  }
+
+  .feature__cta {
+    margin-top: 24px;
+  }
+
+  /* --- bean + cup stage -------------------------------------------------- */
+
+  /* A square container that the cup and badge are sized against, so every
+     value below is a fraction of the column and stays correct as it narrows. */
+  .feature__stage {
+    container-type: inline-size;
+    position: relative;
+    justify-self: end;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .feature__beans {
+    z-index: 2;
+  }
+
+  /* Measured off the reference: the latte's crema disc is 330px across and
+     centred on (1077, 1558). The artwork draws the crema at 0.944 of its
+     canvas, so the canvas is 330 / 0.944 = 350px, centred on the same point —
+     i.e. at x 902, y 1383, which is 19.01% / 10.86% into the 405px stage. */
+  .feature__cup {
+    position: absolute;
+    top: 10.86cqw;
+    left: 19.01cqw;
+    z-index: 1;
+    width: 86.42cqw;
+    filter: drop-shadow(0 26px 40px rgba(40, 18, 8, 0.32));
+  }
+
+  /* Reference badge: x 1145..1262 by y 1408..1512, with ~29px bold type. */
+  .feature__badge {
+    position: absolute;
+    top: 17.28cqw;
+    right: -7.9cqw;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 28.89cqw;
+    height: 25.19cqw;
+    border-radius: 6.91cqw;
+    background: rgba(250, 240, 222, 0.85);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 18px 34px -18px rgba(40, 18, 8, 0.45);
+    color: var(--espresso-900);
+    font-size: 7.06cqw;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .feature__badge {
+      background: rgba(250, 240, 222, 0.96);
+    }
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 1023px) {
+    .feature {
+      gap: clamp(24px, 3vw, 40px);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .feature {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .feature__stage {
+      order: -1;
+      justify-self: center;
+      width: min(440px, 100%);
+    }
+  }
+</style>

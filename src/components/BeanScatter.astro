@@ -1,0 +1,86 @@
+---
+/**
+ * BeanScatter — decorative roasted beans.
+ *
+ * Positions come from the fixed arrays in `src/data/beans.ts`; nothing here is
+ * randomised. The whole thing is `aria-hidden` because it carries no meaning.
+ */
+import type { Bean } from '../data/beans';
+
+interface Props {
+  beans: readonly Bean[];
+  /** Degrees of CSS scroll-driven parallax drift, guarded by @supports. */
+  parallax?: number;
+  class?: string;
+}
+
+const { beans, parallax = 0, class: className = '' } = Astro.props;
+---
+
+<div
+  class={`beans ${className}`.trim()}
+  aria-hidden="true"
+  style={parallax ? `--bean-drift: ${parallax}px` : undefined}
+>
+  {
+    beans.map((bean) => (
+      <svg
+        class="beans__bean"
+        viewBox="0 0 24 24"
+        width={bean.size}
+        height={bean.size}
+        style={`left:${bean.x}%;top:${bean.y}%;opacity:${bean.opacity};transform:rotate(${bean.rotate}deg)`}
+      >
+        <ellipse cx="12" cy="12" rx="6.3" ry="8.9" fill="#2B1710" />
+        <path
+          d="M12 3.6c-3 3.4 3 5.4 0 8.8s3 5.4 0 8"
+          fill="none"
+          stroke="#7E4B27"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          opacity="0.9"
+        />
+        <ellipse cx="9.5" cy="7.8" rx="1.7" ry="3" fill="#C79A6A" opacity="0.28"
+          transform="rotate(-18 9.5 7.8)"></ellipse>
+      </svg>
+    ))
+  }
+</div>
+
+<style>
+  .beans {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .beans__bean {
+    position: absolute;
+    /* x/y are the bean's top-left, so shift back by half to centre it there */
+    translate: -50% -50%;
+    filter: drop-shadow(0 3px 3px rgba(30, 12, 8, 0.3));
+    overflow: visible;
+  }
+
+  /* Scroll-driven parallax — only where the browser supports it, and only
+     when the visitor has not asked for reduced motion. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .beans[style*='--bean-drift'] .beans__bean {
+        animation: bean-drift linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+
+      @keyframes bean-drift {
+        from {
+          margin-block-start: calc(var(--bean-drift) * -1);
+        }
+        to {
+          margin-block-start: var(--bean-drift);
+        }
+      }
+    }
+  }
+</style>

@@ -1,0 +1,96 @@
+---
+/**
+ * Flavored — Elegant Coffeehouse.
+ * Single page. Section order matches the reference artboard exactly.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import ProductShowcase from '../components/ProductShowcase.astro';
+import FeatureSpotlight from '../components/FeatureSpotlight.astro';
+import AppSection from '../components/AppSection.astro';
+import ReserveCTA from '../components/ReserveCTA.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout>
+  <Navbar />
+
+  <main id="main" tabindex="-1">
+    <Hero />
+    <ProductShowcase />
+    <FeatureSpotlight />
+    <AppSection />
+    <ReserveCTA />
+  </main>
+
+  <Footer />
+
+  <!-- Announced, never displayed: the design has no cart counter. -->
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</BaseLayout>
+
+<script>
+  /* ---------------------------------------------------------------------- */
+  /* Scroll reveal — 80ms stagger within each group, one-shot per element.   */
+  /* ---------------------------------------------------------------------- */
+
+  const revealables = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+
+  if (revealables.length > 0) {
+    if (typeof IntersectionObserver === 'function') {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.06 },
+      );
+
+      for (const el of revealables) observer.observe(el);
+    } else {
+      for (const el of revealables) el.classList.add('is-revealed');
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Heart buttons — aria-pressed + a short pop.                             */
+  /* ---------------------------------------------------------------------- */
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-heart]')) {
+    button.addEventListener('click', () => {
+      const pressed = button.getAttribute('aria-pressed') === 'true';
+      button.setAttribute('aria-pressed', String(!pressed));
+
+      button.classList.remove('is-popping');
+      void button.offsetWidth; // restart the animation
+      button.classList.add('is-popping');
+    });
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Cart buttons — bounce, and say what happened. No counter, by design.    */
+  /* ---------------------------------------------------------------------- */
+
+  const live = document.querySelector<HTMLElement>('[data-live]');
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-cart]')) {
+    button.addEventListener('click', () => {
+      const name = button.dataset.cartName ?? 'Item';
+
+      button.classList.remove('is-bouncing');
+      void button.offsetWidth;
+      button.classList.add('is-bouncing');
+
+      if (!live) return;
+      // Clear first so repeating the same product is announced again.
+      live.textContent = '';
+      window.setTimeout(() => {
+        live.textContent = `${name} added to cart`;
+      }, 40);
+    });
+  }
+</script>

@@ -1,0 +1,85 @@
+---
+/**
+ * Reserve CTA (#contact) — eyebrow + heading on the left, the pill on the
+ * right, a hairline, then the closing paragraph.
+ */
+import { reserve } from '../data/site';
+---
+
+<section class="reserve" id="contact" aria-labelledby="contact-title">
+  <div class="reserve__row">
+    <div class="reserve__lead">
+      <p class="eyebrow">{reserve.eyebrow}</p>
+      <h2 class="reserve__title" id="contact-title">{reserve.heading}</h2>
+    </div>
+
+    <a class="btn btn--primary reserve__cta" href={reserve.cta.href}>{reserve.cta.label}</a>
+  </div>
+
+  <hr class="reserve__rule" />
+
+  <p class="reserve__body">{reserve.body}</p>
+</section>
+
+<style>
+  .reserve {
+    /* Reference: the rule sits at y 2836 in the 1440 artboard, 74px below the
+       bottom of the phone pair. */
+    margin-top: clamp(36px, 2.78vw, 40px);
+  }
+
+  .reserve__row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: clamp(20px, 3vw, 48px);
+  }
+
+  .reserve__lead {
+    min-width: 0;
+  }
+
+  .reserve__title {
+    margin-top: 12px;
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    line-height: var(--lh-h2);
+    color: var(--espresso-900);
+  }
+
+  .reserve__cta {
+    flex: none;
+    min-width: 237px;
+  }
+
+  .reserve__rule {
+    height: 0;
+    max-width: 690px;
+    margin: 44px 0 0;
+    border: 0;
+    border-top: 1px solid rgba(42, 10, 10, 0.25);
+  }
+
+  .reserve__body {
+    max-width: 670px;
+    margin-top: 33px;
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    color: var(--text-body);
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 767px) {
+    .reserve__row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 22px;
+    }
+
+    .reserve__cta {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+</style>

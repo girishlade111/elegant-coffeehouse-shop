@@ -1,0 +1,137 @@
+---
+/**
+ * Product showcase (#menu) — two cards on the left, the intro copy on the
+ * right. The cards' cups deliberately break their top edge, which is why the
+ * section carries the extra top margin.
+ */
+import ProductCard from './ProductCard.astro';
+import { products, showcase } from '../data/site';
+---
+
+<section class="showcase" id="menu" aria-labelledby="menu-title">
+  {/* The copy comes first in the DOM so the section heading precedes the card
+      headings; the grid places it in the second column to match the reference. */}
+  <div class="showcase__copy" data-reveal style="--reveal-delay:160ms">
+    <h2 class="showcase__title" id="menu-title">{showcase.heading}</h2>
+    <p class="showcase__body">{showcase.body}</p>
+    <a class="btn btn--gradient showcase__cta" href={showcase.cta.href}>{showcase.cta.label}</a>
+  </div>
+
+  <div class="showcase__cards">
+    {
+      products.map((product, index) => (
+        <ProductCard
+          name={product.name}
+          desc={product.desc}
+          price={product.price}
+          img={product.img}
+          art={product.art}
+          alt={product.alt}
+          tone={product.tone}
+          index={index}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .showcase {
+    display: grid;
+    /* Measured off the reference: the cards occupy x 210..847 and the copy
+       column starts at x 876, i.e. 637 / 29 / 354 across the 1020px content. */
+    grid-template-columns: minmax(0, 637fr) minmax(0, 354fr);
+    align-items: center;
+    gap: clamp(20px, 2.01vw, 29px);
+    /* the cups rise 116px above the cards */
+    margin-top: clamp(64px, 6.4vw, 92px);
+  }
+
+  .showcase__cards {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 26px;
+    /* room for the cups that hang over the top edge */
+    padding-top: 116px;
+  }
+
+  .showcase__copy {
+    grid-area: 1 / 2;
+    min-width: 0;
+  }
+
+  .showcase__title {
+    max-width: 100%;
+    font-size: var(--fs-h2);
+    font-weight: 700;
+    line-height: var(--lh-h2);
+    color: var(--espresso-900);
+  }
+
+  .showcase__body {
+    max-width: 100%;
+    margin-top: 53px;
+    /* The reference sets this intro paragraph smaller than the page body —
+       it breaks into 3 lines here, where 16px would need 4. */
+    font-size: clamp(13px, 1.01vw, 14.5px);
+    line-height: 1.6;
+    color: var(--text-body);
+  }
+
+  .showcase__cta {
+    margin-top: 44px;
+  }
+
+  /* --- responsive -------------------------------------------------------- */
+
+  @media (max-width: 1023px) {
+    .showcase {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .showcase__cards {
+      grid-area: auto;
+      order: 1;
+      padding-top: 78px;
+    }
+
+    .showcase__copy {
+      grid-area: auto;
+      order: 2;
+      max-width: 60ch;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .showcase__cards {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding-top: 70px;
+    }
+  }
+
+  /* horizontal scroll-snap row where it reads better than a tall stack */
+  @media (min-width: 560px) and (max-width: 767px) {
+    .showcase__cards {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(240px, 62%);
+      grid-template-columns: none;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 4px;
+      padding-inline: 4px;
+      scrollbar-width: none;
+    }
+
+    .showcase__cards::-webkit-scrollbar {
+      display: none;
+    }
+
+    .showcase__cards > :global(*) {
+      scroll-snap-align: start;
+    }
+  }
+</style>

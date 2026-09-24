@@ -1,0 +1,82 @@
+/* ==========================================================================
+   Flavored — design tokens
+   All values are the reference artboard's 1440px measurements, converted to
+   fluid rem / clamp() so the whole page scales between 360px and 1440px+.
+   ========================================================================== */
+
+:root {
+  /* ---- palette --------------------------------------------------------
+     Sampled off the reference: heading strokes core at ~rgb(33,2,2) and the
+     hero button's solid fill at ~rgb(25,0,0), so the espresso is a near-black
+     with a faint red cast rather than the #2a0a0a it started as. */
+  --espresso-900: #1f0404;
+  --espresso-800: #3a100c;
+  --caramel-500: #9a5a22;
+  --cream-50: #fff8ee;
+  --cream-100: #f3eadb;
+  --cream-200: #e9dfce;
+  --taupe-400: #b8ac9c;
+  --taupe-600: #8e8477;
+
+  /* Body copy on the reference is a warm grey-brown (~rgb(77,65,63) for the
+     footer links), noticeably less red than the headings. */
+  --text-body: rgba(48, 38, 34, 0.85);
+
+  /* ---- glass ---------------------------------------------------------- */
+  --glass-fill: rgba(255, 255, 255, 0.28);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: 20px;
+
+  /* ---- elevation ------------------------------------------------------ */
+  --shadow-btn: 0 12px 24px -8px rgba(42, 10, 10, 0.55);
+  --shadow-card: 0 30px 60px -30px rgba(40, 15, 10, 0.4);
+  --shadow-chip: 0 8px 18px -10px rgba(42, 10, 10, 0.45);
+  --shadow-cup: 0 30px 50px -18px rgba(40, 20, 10, 0.35);
+
+  /* ---- radii ---------------------------------------------------------- */
+  --radius-pill: 999px;
+  --radius-card: 40px;
+  --radius-chip: 18px;
+  --radius-shell: clamp(28px, 3.9vw, 56px);
+
+  /* ---- type ----------------------------------------------------------- */
+  --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --fs-h1: clamp(40px, 4.4vw, 64px);
+  --fs-h2: clamp(24px, 2.5vw, 36px);
+  --fs-body: clamp(14px, 1.1vw, 16px);
+  --fs-small: clamp(12px, 0.9vw, 13px);
+  --fs-eyebrow: 11px;
+
+  --lh-h1: 1.14;
+  /* Reference headings are set with a ~43px pitch at 37px, i.e. quite tight. */
+  --lh-h2: 1.16;
+  --lh-body: 1.6;
+
+  /* ---- page canvas ----------------------------------------------------
+     Measured off the reference at a 1440px viewport:
+       shell spans x 104..1334  (1230 wide, centred)
+       shell top edge sits at y 96
+       inner content starts at x 209  -> 105px of horizontal padding
+       inner content ends at x 1230
+     -------------------------------------------------------------------- */
+  --page-max: 1232px;
+  --shell-gutter: clamp(16px, 3.75vw, 54px);
+  --shell-pad-x: clamp(20px, 7.31vw, 105px);
+  --shell-pad-y: clamp(28px, 4.6vw, 66px);
+  --shell-margin-y: clamp(24px, 6.6vw, 95px);
+
+  --bg-image: none;
+
+  /* ---- motion --------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Reduce the glass depth on small screens — cheaper compositing, and the
+   backdrop blur reads as mush on a narrow column anyway. */
+@media (max-width: 767px) {
+  :root {
+    --glass-blur: 14px;
+  }
+}

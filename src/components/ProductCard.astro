@@ -1,0 +1,263 @@
+---
+/**
+ * ProductCard — used twice in the showcase and twice (in `compact` form)
+ * inside the left phone screen. Same markup, same copy source, two densities.
+ */
+import Icon from './Icon.astro';
+import Cup from './Cup.astro';
+import type { CupVariant } from './CupArt.astro';
+import type { CardTone } from '../data/site';
+import { formatPrice } from '../data/site';
+
+interface Props {
+  name: string;
+  desc: string;
+  price: number;
+  img: string;
+  art: CupVariant;
+  alt: string;
+  tone?: CardTone;
+  compact?: boolean;
+  /**
+   * Renders the actions as inert spans. Used inside the phone mockups, where
+   * the whole screen is a single `role="img"` illustration and must not
+   * contain focusable controls.
+   */
+  decorative?: boolean;
+  /** Reveal stagger index. */
+  index?: number;
+}
+
+const {
+  name,
+  desc,
+  price,
+  img,
+  art,
+  alt,
+  tone = 'glass',
+  compact = false,
+  decorative = false,
+  index = 0,
+} = Astro.props;
+
+const cupSize = compact ? 70 : 234;
+const actionIconSize = compact ? 11 : 16;
+const actionStroke = compact ? 1.5 : 1.6;
+---
+
+<article
+  class:list={['card', `card--${tone}`, compact && 'card--compact']}
+  data-reveal={decorative ? undefined : true}
+  style={decorative ? undefined : `--reveal-delay:${index * 80}ms`}
+>
+  <div class="card__cup">
+    <Cup file={img} variant={art} size={cupSize} alt={alt} />
+  </div>
+
+  <h3 class="card__name">{name}</h3>
+  <p class="card__desc">{desc}</p>
+
+  <div class="card__actions">
+    {
+      decorative ? (
+        <>
+          <span class="card__action">
+            <Icon name="cart" size={actionIconSize} stroke={actionStroke} />
+          </span>
+          <span class="card__action">
+            <Icon name="heart" size={actionIconSize} stroke={actionStroke} />
+          </span>
+        </>
+      ) : (
+        <>
+          <button
+            class="card__action"
+            type="button"
+            data-cart
+            data-cart-name={name}
+            aria-label={`Add ${name} to cart`}
+          >
+            <Icon name="cart" size={actionIconSize} stroke={actionStroke} />
+          </button>
+          <button
+            class="card__action"
+            type="button"
+            data-heart
+            aria-pressed="false"
+            aria-label={`Save ${name} to favourites`}
+          >
+            <Icon name="heart" size={actionIconSize} stroke={actionStroke} />
+          </button>
+        </>
+      )
+    }
+  </div>
+
+  <span class="card__price">{formatPrice(price)}</span>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    min-height: 288px;
+    padding: 122px 22px 28px;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
+    text-align: left;
+  }
+
+  .card--glass {
+    background: rgba(255, 255, 255, 0.42);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+
+  .card--cream {
+    background: rgba(250, 243, 230, 0.86);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .card--glass {
+      background: rgba(250, 246, 240, 0.88);
+    }
+  }
+
+  /* --- cup half-overlapping the top edge --------------------------------- */
+
+  .card__cup {
+    position: absolute;
+    top: -116px;
+    left: 50%;
+    translate: -50% 0;
+    width: 234px;
+    filter: drop-shadow(0 22px 30px rgba(40, 20, 10, 0.3));
+  }
+
+  /* --- copy -------------------------------------------------------------- */
+
+  .card__name {
+    align-self: stretch;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--espresso-900);
+  }
+
+  .card__desc {
+    align-self: stretch;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  /* --- actions ----------------------------------------------------------- */
+
+  .card__actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+
+  .card__action {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--espresso-900);
+    box-shadow: var(--shadow-chip);
+    transition:
+      transform 180ms var(--ease-out),
+      background-color 180ms var(--ease-out);
+  }
+
+  .card__action:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  /* heart toggle */
+  .card__action[data-heart][aria-pressed='true'] {
+    color: var(--espresso-900);
+    background: var(--cream-50);
+  }
+
+  .card__action[data-heart][aria-pressed='true'] :global(svg) {
+    fill: currentColor;
+  }
+
+  /* --- price pill straddling the bottom edge ----------------------------- */
+
+  .card__price {
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    translate: -50% 0;
+    padding: 6px 18px;
+    border-radius: var(--radius-pill);
+    background: var(--espresso-900);
+    color: var(--cream-50);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    box-shadow: 0 10px 20px -12px rgba(42, 10, 10, 0.7);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* compact — the two little cards on the left phone screen                 */
+  /* ---------------------------------------------------------------------- */
+
+  .card--compact {
+    min-height: 168px;
+    padding: 48px 10px 16px;
+    border-radius: 20px;
+    border-width: 1px;
+    box-shadow: 0 14px 26px -18px rgba(40, 15, 10, 0.5);
+  }
+
+  .card--compact .card__cup {
+    top: -30px;
+    width: 70px;
+    filter: drop-shadow(0 8px 12px rgba(40, 20, 10, 0.28));
+  }
+
+  .card--compact .card__name {
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  .card--compact .card__desc {
+    margin-top: 3px;
+    font-size: 6.5px;
+    line-height: 1.45;
+    opacity: 0.8;
+  }
+
+  .card--compact .card__actions {
+    gap: 8px;
+    padding-top: 10px;
+  }
+
+  .card--compact .card__action {
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: none;
+  }
+
+  .card--compact .card__price {
+    bottom: -8px;
+    padding: 2px 9px;
+    font-size: 7px;
+    box-shadow: 0 5px 10px -6px rgba(42, 10, 10, 0.7);
+  }
+</style>
