@@ -289,3 +289,9 @@ Remember to set the real site URL in two places after you have a domain:
 
 All rights reserved unless otherwise noted. Replace this section with your preferred
 license (e.g. MIT) before publishing if you intend to open-source the project.
+
+---
+
+## Credits
+
+Built by [Girish Lade](https://ladestack.in)
