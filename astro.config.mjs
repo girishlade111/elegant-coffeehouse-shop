@@ -4,7 +4,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://flavored.example.com',
+  site: 'https://girishlade111.github.io',
+  base: '/elegant-coffeehouse-shop',
   output: 'static',
   trailingSlash: 'ignore',
   integrations: [sitemap()],
